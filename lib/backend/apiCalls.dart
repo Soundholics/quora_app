@@ -1,9 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
-
 import 'package:common_infra_ads/dataModels/user.dart';
-import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -58,7 +55,61 @@ class AuthenticationApi extends ApiCalls {
 
     try {
       decodedResponse = jsonDecode(response.body);
-      print("Submit Business Enquiry Response: " + decodedResponse.toString());
+      print("Login Response " + decodedResponse.toString());
+    } catch (e) {
+      return ApiResponse(
+          success: false, error: "Invalid Server Response: " + e.toString());
+    }
+    //Return List of States
+    if (ApiResponse.isMapParsble(decodedResponse)) {
+      SharedPreferences sharedPreferences =
+          await SharedPreferences.getInstance();
+
+      sharedPreferences.setString(
+          "com.quinbay.quora-accesstoken", decodedResponse['data']['jwt']);
+
+      return await loginWithQuora();
+    } else {
+      return ApiResponse(success: false, error: "Invalid Server Response");
+    }
+  }
+
+  Future<ApiResponse> logout({int counter = 0}) async {
+    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+
+    Map<String, String> headers = {
+      'Content-Type': 'application/json',
+      'Authorization':
+          sharedPreferences.getString("com.quinbay.quora-accesstoken")
+    };
+
+    if (counter >= 5) {
+      return ApiResponse(
+          success: false, error: "Failed to retrieve data upon retries.");
+    }
+    http.Response response;
+
+    try {
+      response = await http.get(
+          Uri.parse(baseAuthUrl + 'auth/logout?client=quora-mobile'),
+          headers: headers);
+    } catch (e) {
+      return ApiResponse(
+          success: false,
+          error: "Error Response Code: " + response.statusCode.toString());
+    }
+
+    if (response.statusCode != 200) {
+      return ApiResponse(
+          success: false,
+          error: "Error Response Code: " + response.statusCode.toString());
+    }
+
+    var decodedResponse;
+
+    try {
+      decodedResponse = jsonDecode(response.body);
+      print(decodedResponse.toString());
     } catch (e) {
       return ApiResponse(
           success: false, error: "Invalid Server Response: " + e.toString());
@@ -66,9 +117,9 @@ class AuthenticationApi extends ApiCalls {
     //Return List of States
     if (ApiResponse.isMapParsble(decodedResponse)) {
       return ApiResponse(
-          success: decodedResponse["success"],
-          data: decodedResponse["data"],
-          error: decodedResponse["error"].toString());
+          success: decodedResponse['success'],
+          data: decodedResponse['data'],
+          error: decodedResponse['error']);
     } else {
       return ApiResponse(success: false, error: "Invalid Server Response");
     }
@@ -177,6 +228,64 @@ class AuthenticationApi extends ApiCalls {
           Uri.parse(baseGatewayUrl + 'quoraUsers/addUser'),
           headers: headers,
           body: bodyJson);
+    } catch (e) {
+      return ApiResponse(
+          success: false,
+          error: "Error Response Code: " + response.statusCode.toString());
+    }
+
+    if (response.statusCode != 200) {
+      return ApiResponse(
+          success: false,
+          error: "Error Response Code: " + response.statusCode.toString());
+    }
+
+    var decodedResponse;
+
+    try {
+      decodedResponse = jsonDecode(response.body);
+      print(decodedResponse.toString());
+    } catch (e) {
+      return ApiResponse(
+          success: false, error: "Invalid Server Response: " + e.toString());
+    }
+    //Return List of States
+    if (decodedResponse != null) {
+      SharedPreferences sharedPreferences =
+          await SharedPreferences.getInstance();
+
+      sharedPreferences.setString(
+          "com.quinbay.quora-user", jsonEncode(decodedResponse));
+
+      return ApiResponse(
+          success: true, data: User.fromJson(decodedResponse), error: "");
+    } else {
+      return ApiResponse(success: false, error: "Invalid Server Response");
+    }
+  }
+
+  Future<ApiResponse> loginWithQuora({int counter = 0}) async {
+    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+
+    print(sharedPreferences.getString("com.quinbay.quora-accesstoken"));
+
+    Map<String, String> headers = {
+      'Content-Type': 'application/json',
+      'Authorization':
+          sharedPreferences.getString("com.quinbay.quora-accesstoken")
+    };
+
+    if (counter >= 5) {
+      return ApiResponse(
+          success: false, error: "Failed to retrieve data upon retries.");
+    }
+
+    http.Response response;
+
+    try {
+      response = await http.get(
+          Uri.parse(baseGatewayUrl + 'quoraUsers/getUserDetails'),
+          headers: headers);
     } catch (e) {
       return ApiResponse(
           success: false,

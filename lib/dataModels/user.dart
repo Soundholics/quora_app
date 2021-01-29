@@ -20,7 +20,7 @@ class User {
     useremail = json['userEmail'];
     firstname = json['firstName'];
     lastname = json['lastName'];
-    isPrivate = json['isPrivate'];
+    isPrivate = json['private'];
     associatedBusinessEmail = json['associatedBusinessEmail'];
     photourl = json['photoUrl'];
     bio = json['bio'];
@@ -31,7 +31,7 @@ class User {
     data['userEmail'] = this.useremail;
     data['firstName'] = this.firstname;
     data['lastName'] = this.lastname;
-    data['isPrivate'] = this.isPrivate;
+    data['private'] = this.isPrivate;
     data['associatedBusinessEmail'] = this.associatedBusinessEmail;
     data['photoUrl'] = this.photourl;
     data['bio'] = this.bio;

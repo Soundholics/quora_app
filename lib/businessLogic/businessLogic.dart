@@ -10,7 +10,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 class BusinessLogic {
   final BuildContext context;
 
-  BusinessLogic(this.context) {}
+  BusinessLogic(this.context);
 
   // Colors for snackbars
   final Color errorRed = AppColors().pastelRed;
@@ -106,6 +106,38 @@ class BusinessLogic {
             ),
           );
         });
+  }
+
+  Future<void> logout() async {
+    AuthenticationApi authenticationApi =
+        AuthenticationApi(Duration(seconds: 15));
+
+    // show progress bar
+    showProgressIndicator();
+
+    ApiResponse logoutResponse = await authenticationApi.logout();
+
+    if (logoutResponse.success) {
+      // logout from app locally
+
+      SharedPreferences sharedPreferences =
+          await SharedPreferences.getInstance();
+
+      sharedPreferences.remove("com.quinbay.quora-accesstoken");
+      sharedPreferences.remove("com.quinbay.quora-user");
+
+      Future.delayed(Duration(milliseconds: 3000)).whenComplete(() {
+        Navigator.pop(context);
+        Navigator.pushNamedAndRemoveUntil(context, "/login", (route) => false);
+      });
+    } else {
+      Navigator.pop(context);
+      showSnackbar(
+          backgroundColor: errorRed,
+          textColor: errorText,
+          icon: appIcons.error,
+          content: logoutResponse.error);
+    }
   }
 
   Future<void> register(

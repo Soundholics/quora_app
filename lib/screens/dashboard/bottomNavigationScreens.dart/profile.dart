@@ -23,21 +23,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   initState() {
-    getSharedpreferencesInstance();
     super.initState();
-  }
-
-  void getSharedpreferencesInstance() async {
-    sharedPreferences = await SharedPreferences.getInstance();
-    accessToken = sharedPreferences.getString("com.quinbay.quora-accesstoken");
-    user = User.fromJson(
-        jsonDecode(sharedPreferences.getString("com.quinbay.quora-user")));
-
-    if (user.isPrivate) {
-      profileVisibility = ProfileVisibility.private;
-    }
-
-    setState(() {});
   }
 
   @override
@@ -95,25 +81,34 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ProfileOption(
             title: "Edit Profile",
             appConfig: appConfig,
-            onTap: () {},
+            onTap: () {
+              // dialog to edit profile and api call upon click
+            },
           ),
           seperatorHorizontal,
           ProfileOption(
             title: "Question History",
             appConfig: appConfig,
-            onTap: () {},
+            onTap: () {
+              // api call to get the questions and push to new screen
+            },
           ),
           seperatorHorizontal,
           ProfileOption(
             title: "Answer History",
             appConfig: appConfig,
-            onTap: () {},
+            onTap: () {
+              // api call to get the answers and push to new screen
+            },
           ),
           seperatorHorizontal,
           ProfileOption(
             title: "Logout",
             appConfig: appConfig,
-            onTap: () {},
+            onTap: () {
+              // logout api call and In app Logout business logic
+              appConfig.businessLogic.logout();
+            },
           ),
         ],
       ),
@@ -123,7 +118,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget get fetchProfile {
     return Center(
       child: MaterialButton(
-        onPressed: () {
+        onPressed: () async {
+          sharedPreferences = await SharedPreferences.getInstance();
+          accessToken =
+              sharedPreferences.getString("com.quinbay.quora-accesstoken");
+          user = User.fromJson(jsonDecode(
+              sharedPreferences.getString("com.quinbay.quora-user")));
+
+          if (user.isPrivate ?? false) {
+            profileVisibility = ProfileVisibility.private;
+          }
+
           setState(() {});
         },
         child: Text("Chick Here to Refresh"),
