@@ -13,13 +13,16 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ProfileScreen extends StatefulWidget {
+  final SharedPreferences sharedPreferences;
+
+  ProfileScreen(this.sharedPreferences);
   @override
   _ProfileScreenState createState() => _ProfileScreenState();
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
   AppConfig appConfig;
-  SharedPreferences sharedPreferences;
+
   String accessToken = "";
   ProfileVisibility profileVisibility = ProfileVisibility.public;
   User user = User();
@@ -31,6 +34,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    SharedPreferences sharedPreferences = widget.sharedPreferences;
+    accessToken = sharedPreferences.getString("com.quinbay.quora-accesstoken");
+    user = User.fromJson(
+        jsonDecode(sharedPreferences.getString("com.quinbay.quora-user")));
+
+    if (user.isPrivate ?? false) {
+      profileVisibility = ProfileVisibility.private;
+    }
     appConfig = AppConfig(context);
     return Scaffold(
       body: Container(
@@ -40,20 +51,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
         padding: EdgeInsets.only(
             top: appConfig.responsive.heightBasedOnPercentage(15)),
         child: Column(
-          children: user.firstname == null
-              ? [
-                  fetchProfile,
-                ]
-              : [
-                  userImage,
-                  sizedBox(15),
-                  userName,
-                  sizedBox(1),
-                  engagementBanner,
-                  profileVisibilityBanner,
-                  sizedBox(15),
-                  profileOptionsBanner,
-                ],
+          children: [
+            userImage,
+            sizedBox(15),
+            userName,
+            sizedBox(1),
+            engagementBanner,
+            profileVisibilityBanner,
+            sizedBox(15),
+            profileOptionsBanner,
+          ],
         ),
       ),
     );
@@ -118,27 +125,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
             },
           ),
         ],
-      ),
-    );
-  }
-
-  Widget get fetchProfile {
-    return Center(
-      child: MaterialButton(
-        onPressed: () async {
-          sharedPreferences = await SharedPreferences.getInstance();
-          accessToken =
-              sharedPreferences.getString("com.quinbay.quora-accesstoken");
-          user = User.fromJson(jsonDecode(
-              sharedPreferences.getString("com.quinbay.quora-user")));
-
-          if (user.isPrivate ?? false) {
-            profileVisibility = ProfileVisibility.private;
-          }
-
-          setState(() {});
-        },
-        child: Text("Chick Here to Refresh"),
       ),
     );
   }

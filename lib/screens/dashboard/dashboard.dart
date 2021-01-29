@@ -3,6 +3,7 @@ import 'package:common_infra_ads/utilities/appConfig/appConfig.dart';
 import 'package:common_infra_ads/utilities/enums.dart';
 import 'package:common_infra_ads/widgets/BottomNavigationItem.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'bottomNavigationScreens.dart/feed.dart';
 import 'bottomNavigationScreens.dart/profile.dart';
@@ -16,6 +17,8 @@ class Dashboard extends StatefulWidget {
 class _DashboardState extends State<Dashboard> {
   AppConfig appConfig;
   DashboardScreen currentDashboardScreen;
+
+  SharedPreferences sharedPreferences;
 
   @override
   void initState() {
@@ -42,7 +45,7 @@ class _DashboardState extends State<Dashboard> {
       Feed(),
       Search(),
       UAQs(),
-      ProfileScreen(),
+      ProfileScreen(sharedPreferences),
     ];
     return dashBoardScreens[currentDashboardScreen.index];
   }
@@ -55,11 +58,16 @@ class _DashboardState extends State<Dashboard> {
         showSelectedLabels: false,
         showUnselectedLabels: false,
         currentIndex: currentDashboardScreen.index,
-        onTap: (index) {
-          if (currentDashboardScreen.index != index)
+        onTap: (index) async {
+          if (currentDashboardScreen.index != index) {
+            if (currentDashboardScreen == DashboardScreen.profile) {
+              this.sharedPreferences = await SharedPreferences.getInstance();
+            }
+
             this.setState(() {
               currentDashboardScreen = DashboardScreen.values.elementAt(index);
             });
+          }
         },
         items: [
           BottomNavBarItem(

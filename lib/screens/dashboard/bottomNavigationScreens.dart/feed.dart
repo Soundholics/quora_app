@@ -23,7 +23,6 @@ class _FeedState extends State<Feed> {
     return Scaffold(
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          // show dialog to post question
           showDialog(
               context: context, builder: (context) => PostQuestionDialog());
         },
@@ -49,8 +48,15 @@ class _FeedState extends State<Feed> {
           future: backend.fetchQuestionForFeed(),
           builder: (context, snapshot) {
             if (snapshot.hasError) {
-              return Text(snapshot.error.toString());
+              return Text(
+                  "Can't reach our servers at the moment! Try again a little while later!");
             } else if (snapshot.hasData) {
+              if (backend.questionsForFeed.length == 0) {
+                return Center(
+                    child:
+                        Text("Start Following other users to populate feed"));
+              }
+
               return SingleChildScrollView(
                   scrollDirection: Axis.vertical,
                   child: Column(
