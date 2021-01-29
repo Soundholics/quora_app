@@ -3,13 +3,14 @@ import 'package:common_infra_ads/utilities/appConfig/appConfig.dart';
 import 'package:flutter/material.dart';
 
 class QuestionOnFeed extends StatelessWidget {
-  final AppConfig appConfig;
+  AppConfig appConfig;
   final QuestionForFeed questionForFeed;
 
-  QuestionOnFeed({@required this.appConfig, @required this.questionForFeed});
+  QuestionOnFeed({@required this.questionForFeed});
 
   @override
   Widget build(BuildContext context) {
+    appConfig = AppConfig(context);
     return InkWell(
       onTap: () {
         // TODO: go to questions page
@@ -55,7 +56,7 @@ class QuestionOnFeed extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    "Top Answer by ${questionForFeed.topAnswerBy}",
+                    "Upvotes : ${questionForFeed.topAnswerUpvotes} | Downvotes : ${questionForFeed.topAnswerDownvotes}",
                     style: appConfig.appTextTheme.textStyle39.copyWith(
                       color: appConfig.appColors.black.withOpacity(0.4),
                       fontSize: appConfig.responsive.height(11),

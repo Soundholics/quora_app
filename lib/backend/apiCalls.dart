@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:common_infra_ads/dataModels/DTOs/userEngagement.dart';
 import 'package:common_infra_ads/dataModels/user.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -12,6 +13,184 @@ abstract class ApiCalls {
   final String baseGatewayUrl = "http://10.177.2.29:8760/";
 
   ApiCalls(this.timeout);
+}
+
+class FeedApi extends ApiCalls {
+  FeedApi(Duration timeout) : super(timeout);
+
+  Future<ApiResponse> populateUserFeed({int counter = 0}) async {
+    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+
+    print(sharedPreferences.getString("com.quinbay.quora-accesstoken"));
+
+    Map<String, String> headers = {
+      'Content-Type': 'application/json',
+      'Authorization':
+          sharedPreferences.getString("com.quinbay.quora-accesstoken")
+    };
+
+    if (counter >= 5) {
+      return ApiResponse(
+          success: false, error: "Failed to retrieve data upon retries.");
+    }
+
+    http.Response response;
+
+    try {
+      response = await http.get(Uri.parse(baseGatewayUrl + 'feed/landingPage'),
+          headers: headers);
+    } catch (e) {
+      return ApiResponse(
+          success: false,
+          error: "Error Response Code: " + response.statusCode.toString());
+    }
+
+    if (response.statusCode != 200) {
+      return ApiResponse(
+          success: false,
+          error: "Error Response Code: " + response.statusCode.toString());
+    }
+
+    var decodedResponse;
+
+    try {
+      decodedResponse = jsonDecode(response.body);
+      print(decodedResponse.toString());
+    } catch (e) {
+      return ApiResponse(
+          success: false, error: "Invalid Server Response: " + e.toString());
+    }
+
+    if (decodedResponse != null) {
+      return ApiResponse(success: true, data: decodedResponse, error: "");
+    } else {
+      return ApiResponse(success: false, error: "Invalid Server Response");
+    }
+  }
+}
+
+class ProfileApi extends ApiCalls {
+  ProfileApi(Duration timeout) : super(timeout);
+
+  Future<ApiResponse> getEngagementStats({int counter = 0}) async {
+    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+
+    print(sharedPreferences.getString("com.quinbay.quora-accesstoken"));
+
+    Map<String, String> headers = {
+      'Content-Type': 'application/json',
+      'Authorization':
+          sharedPreferences.getString("com.quinbay.quora-accesstoken")
+    };
+
+    if (counter >= 5) {
+      return ApiResponse(
+          success: false, error: "Failed to retrieve data upon retries.");
+    }
+
+    http.Response response;
+
+    try {
+      response = await http.get(
+          Uri.parse(baseGatewayUrl + 'quoraUsers/getUserCount'),
+          headers: headers);
+    } catch (e) {
+      return ApiResponse(
+          success: false,
+          error: "Error Response Code: " + response.statusCode.toString());
+    }
+
+    if (response.statusCode != 200) {
+      return ApiResponse(
+          success: false,
+          error: "Error Response Code: " + response.statusCode.toString());
+    }
+
+    var decodedResponse;
+
+    try {
+      decodedResponse = jsonDecode(response.body);
+      print(decodedResponse.toString());
+    } catch (e) {
+      return ApiResponse(
+          success: false, error: "Invalid Server Response: " + e.toString());
+    }
+    //Return List of States
+    if (decodedResponse != null) {
+      return ApiResponse(
+          success: true,
+          data: UserEngagement.fromJson(decodedResponse),
+          error: "");
+    } else {
+      return ApiResponse(success: false, error: "Invalid Server Response");
+    }
+  }
+
+  Future<ApiResponse> changeProfileVisibility(
+      {String username,
+      String firstname,
+      String lastname,
+      int counter = 0}) async {
+    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+
+    print(sharedPreferences.getString("com.quinbay.quora-accesstoken"));
+
+    Map<String, String> headers = {
+      'Content-Type': 'application/json',
+      'Authorization':
+          sharedPreferences.getString("com.quinbay.quora-accesstoken")
+    };
+
+    if (counter >= 5) {
+      return ApiResponse(
+          success: false, error: "Failed to retrieve data upon retries.");
+    }
+
+    http.Response response;
+
+    try {
+      response = await http.get(
+          Uri.parse(baseGatewayUrl + 'quoraUsers/switchProfilePrivacy'),
+          headers: headers);
+    } catch (e) {
+      return ApiResponse(
+          success: false,
+          error: "Error Response Code: " + response.statusCode.toString());
+    }
+
+    if (response.statusCode != 200) {
+      return ApiResponse(
+          success: false,
+          error: "Error Response Code: " + response.statusCode.toString());
+    }
+
+    var decodedResponse;
+
+    try {
+      decodedResponse = jsonDecode(response.body);
+      print(decodedResponse.toString());
+    } catch (e) {
+      return ApiResponse(
+          success: false, error: "Invalid Server Response: " + e.toString());
+    }
+    //Return List of States
+    if (decodedResponse != null) {
+      SharedPreferences sharedPreferences =
+          await SharedPreferences.getInstance();
+
+      User user = User.fromJson(
+          jsonDecode(sharedPreferences.getString("com.quinbay.quora-user")));
+
+      user.isPrivate = !user.isPrivate;
+
+      sharedPreferences.setString(
+          "com.quinbay.quora-user", jsonEncode(user.toJson()));
+
+      return ApiResponse(success: true, data: "", error: "");
+    } else {
+      return ApiResponse(success: false, error: "Invalid Server Response");
+    }
+  }
 }
 
 class AuthenticationApi extends ApiCalls {

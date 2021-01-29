@@ -1,5 +1,8 @@
 import 'dart:convert';
 
+import 'package:common_infra_ads/backend/apiCalls.dart';
+import 'package:common_infra_ads/backend/apiResponse.dart';
+import 'package:common_infra_ads/dataModels/DTOs/userEngagement.dart';
 import 'package:common_infra_ads/dataModels/user.dart';
 import 'package:common_infra_ads/utilities/appConfig/appConfig.dart';
 import 'package:common_infra_ads/utilities/enums.dart';
@@ -83,6 +86,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
             appConfig: appConfig,
             onTap: () {
               // dialog to edit profile and api call upon click
+
+              appConfig.businessLogic.showSnackbar(
+                  content: "Feature would be available soon!\n~Quora Team",
+                  backgroundColor: appConfig.appColors.black);
             },
           ),
           seperatorHorizontal,
@@ -137,42 +144,68 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget get engagementBanner {
-    return Container(
-      height: appConfig.responsive.height(127),
-      width: appConfig.responsive.width(331),
-      alignment: Alignment.center,
-      padding: EdgeInsets.symmetric(
-          vertical: appConfig.responsive.height(10),
-          horizontal: appConfig.responsive.width(20)),
-      decoration: BoxDecoration(
-          color: appConfig.appColors.white,
-          borderRadius: BorderRadius.all(Radius.circular(13))),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          seperatorHorizontal,
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              EngagementHolder(
-                title: "Followers",
-                value: "500",
-                units: "",
-                appConfig: appConfig,
+    _Backend backend = _Backend();
+
+    return FutureBuilder(
+        initialData: backend.userEngagement,
+        future: backend.fetchUserEngagement(),
+        builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            return Text("Error Reaching Servers");
+          }
+          if (snapshot.data == null) {
+            return Center(
+              child: CircularProgressIndicator(
+                valueColor:
+                    AlwaysStoppedAnimation(appConfig.appColors.quoraRed),
               ),
-              EngagementHolder(
-                title: "Following",
-                value: "200",
-                units: "",
-                appConfig: appConfig,
+            );
+          } else if (snapshot.hasData) {
+            return Container(
+              height: appConfig.responsive.height(127),
+              width: appConfig.responsive.width(331),
+              alignment: Alignment.center,
+              padding: EdgeInsets.symmetric(
+                  vertical: appConfig.responsive.height(10),
+                  horizontal: appConfig.responsive.width(20)),
+              decoration: BoxDecoration(
+                  color: appConfig.appColors.white,
+                  borderRadius: BorderRadius.all(Radius.circular(13))),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  seperatorHorizontal,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      EngagementHolder(
+                        title: "Followers",
+                        value: "${backend.userEngagement.followers}",
+                        units: "",
+                        appConfig: appConfig,
+                      ),
+                      EngagementHolder(
+                        title: "Following",
+                        value: "${backend.userEngagement.followings}",
+                        units: "",
+                        appConfig: appConfig,
+                      ),
+                    ],
+                  ),
+                  seperatorHorizontal,
+                ],
               ),
-            ],
-          ),
-          seperatorHorizontal,
-        ],
-      ),
-    );
+            );
+          } else {
+            return Center(
+              child: CircularProgressIndicator(
+                valueColor:
+                    AlwaysStoppedAnimation(appConfig.appColors.quoraRed),
+              ),
+            );
+          }
+        });
   }
 
   Widget get profileVisibilityBanner {
@@ -195,17 +228,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
         thumbColor: appConfig.appColors.quoraRed,
         groupValue: profileVisibility.index,
         children: profileVisibilityChildren,
-        onValueChanged: (index) {
+        onValueChanged: (index) async {
           setState(() {
-            if (index == ProfileVisibility.public.index) {
+            if (index == ProfileVisibility.public.index &&
+                profileVisibility.index != ProfileVisibility.public.index) {
               profileVisibility = ProfileVisibility.public;
               user.isPrivate = false;
 
+              appConfig.businessLogic.changeProfileVisibility();
+
               // trigger an api to change the value
-            } else {
+            }
+            if (index == ProfileVisibility.private.index &&
+                profileVisibility.index != ProfileVisibility.private.index) {
               profileVisibility = ProfileVisibility.private;
               user.isPrivate = true;
 
+              appConfig.businessLogic.changeProfileVisibility();
               // trigger an api to change the value
             }
           });
@@ -273,5 +312,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return SizedBox(
         height: appConfig.responsive.height(height),
         width: appConfig.responsive.width(width ?? 0));
+  }
+}
+
+class _Backend {
+  UserEngagement userEngagement = UserEngagement();
+  ProfileApi profileApi = ProfileApi(Duration(seconds: 5));
+
+  Future<UserEngagement> fetchUserEngagement() async {
+    ApiResponse apiResponse = await profileApi.getEngagementStats();
+
+    userEngagement = apiResponse.data;
+    return userEngagement;
   }
 }

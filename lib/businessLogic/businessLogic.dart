@@ -182,6 +182,32 @@ class BusinessLogic {
     }
   }
 
+  Future<void> changeProfileVisibility() async {
+    ProfileApi profileApi = ProfileApi(Duration(seconds: 15));
+
+    // show progress bar
+    showProgressIndicator();
+    ApiResponse apiResponse = await profileApi.changeProfileVisibility();
+
+    if (apiResponse.success) {
+      Navigator.pop(context);
+
+      showSnackbar(
+          backgroundColor: successGreen,
+          textColor: successText,
+          icon: appIcons.success,
+          content: "Profile Visibility Succesfully Changed");
+    } else {
+      Navigator.pop(context);
+
+      showSnackbar(
+          backgroundColor: errorRed,
+          textColor: errorText,
+          icon: appIcons.error,
+          content: apiResponse.error);
+    }
+  }
+
   void showSnackbar(
       {@required String content,
       Duration duration,

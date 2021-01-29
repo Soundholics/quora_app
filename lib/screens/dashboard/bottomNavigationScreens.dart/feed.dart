@@ -1,3 +1,5 @@
+import 'package:common_infra_ads/backend/apiCalls.dart';
+import 'package:common_infra_ads/backend/apiResponse.dart';
 import 'package:common_infra_ads/dataModels/DTOs/questionsForFeed.dart';
 import 'package:common_infra_ads/utilities/appConfig/appConfig.dart';
 import 'package:common_infra_ads/widgets/button.dart';
@@ -12,21 +14,10 @@ class Feed extends StatefulWidget {
 
 class _FeedState extends State<Feed> {
   AppConfig appConfig;
-
-  List<QuestionForFeed> questionsForFeed = List();
+  _Backend backend = _Backend();
 
   @override
   Widget build(BuildContext context) {
-    questionsForFeed.add(QuestionForFeed(
-        useremail: "akshithchittiveli@gmail.com",
-        questionId: 1,
-        questionString: "What is the full form of UNO?",
-        createdOn: DateTime.now().toString(),
-        category: "Bollywood",
-        topAnswerBy: "someone@quinbay.com",
-        topAnswer:
-            "Contrary to popular belief, Lorem Ipsum is not simply random text. It has roots in a piece of classical Latin literature from 45 BC, making it over 2000 years old. Richard McClintock, a Latin professor at Hampden-Sydney College in Virginia, looked up one of the more obscure Latin words, consectetur, from a Lorem Ipsum passage, and going through the cites of the word in classical literature, discovered the undoubtable source. Lorem Ipsum comes from sections 1.10.32 and 1.10.33 of de Finibus Bonorum et Malorum (The Extremes of Good and Evil) by Cicero, written in 45 BC. This book is a treatise on the theory of ethics, very popular during the Renaissance. The first line of Lorem Ipsum, Lorem ipsum dolor sit amet.., comes from a line in section 1.10.32."));
-
     appConfig = AppConfig(context);
 
     return Scaffold(
@@ -46,37 +37,32 @@ class _FeedState extends State<Feed> {
         ),
       ),
       body: SafeArea(
-        child: Container(
-            height: appConfig.responsive.heightBasedOnPercentage(100),
-            width: appConfig.responsive.widthBasedOnPercentage(100),
-            padding: EdgeInsets.only(
-                left: appConfig.responsive.width(10),
-                right: appConfig.responsive.width(10),
-                top: appConfig.responsive.height(10)),
-            child: SingleChildScrollView(
-              scrollDirection: Axis.vertical,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  QuestionOnFeed(
-                      appConfig: appConfig,
-                      questionForFeed: questionsForFeed[0]),
-                  QuestionOnFeed(
-                      appConfig: appConfig,
-                      questionForFeed: questionsForFeed[0]),
-                  QuestionOnFeed(
-                      appConfig: appConfig,
-                      questionForFeed: questionsForFeed[0]),
-                  QuestionOnFeed(
-                      appConfig: appConfig,
-                      questionForFeed: questionsForFeed[0]),
-                  QuestionOnFeed(
-                      appConfig: appConfig,
-                      questionForFeed: questionsForFeed[0])
-                ],
-              ),
-            )),
-      ),
+          child: Container(
+        height: appConfig.responsive.heightBasedOnPercentage(100),
+        width: appConfig.responsive.widthBasedOnPercentage(100),
+        padding: EdgeInsets.only(
+            left: appConfig.responsive.width(10),
+            right: appConfig.responsive.width(10),
+            top: appConfig.responsive.height(10)),
+        child: FutureBuilder(
+          initialData: backend.questionsForFeed,
+          future: backend.fetchQuestionForFeed(),
+          builder: (context, snapshot) {
+            if (snapshot.hasError) {
+              return Text(snapshot.error.toString());
+            } else if (snapshot.hasData) {
+              return SingleChildScrollView(
+                  scrollDirection: Axis.vertical,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: snapshot.data,
+                  ));
+            } else {
+              return Text("");
+            }
+          },
+        ),
+      )),
     );
   }
 }
@@ -159,5 +145,24 @@ class _PostQuestionDialogState extends State<PostQuestionDialog> {
     return SizedBox(
         height: appConfig.responsive.height(height),
         width: appConfig.responsive.width(width ?? 0));
+  }
+}
+
+class _Backend {
+  FeedApi feedApi = FeedApi(Duration(seconds: 2));
+
+  List<QuestionOnFeed> questionsForFeed = List();
+
+  Future<List<QuestionOnFeed>> fetchQuestionForFeed() async {
+    ApiResponse apiResponse = await feedApi.populateUserFeed();
+
+    print("object");
+    apiResponse.data.forEach((question) {
+      print(question.toString());
+      questionsForFeed.add(
+          QuestionOnFeed(questionForFeed: QuestionForFeed.fromJson(question)));
+    });
+
+    return questionsForFeed;
   }
 }
