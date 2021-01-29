@@ -2,7 +2,7 @@ class User {
   String useremail;
   String firstname;
   String lastname;
-  String isPrivate;
+  bool isPrivate;
   String associatedBusinessEmail;
   String photourl;
   String bio;
@@ -17,7 +17,7 @@ class User {
       this.bio});
 
   User.fromJson(Map<String, dynamic> json) {
-    useremail = json['useremail'];
+    useremail = json['userEmail'];
     firstname = json['firstName'];
     lastname = json['lastName'];
     isPrivate = json['isPrivate'];
