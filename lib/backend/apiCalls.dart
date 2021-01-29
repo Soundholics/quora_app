@@ -18,6 +18,60 @@ abstract class ApiCalls {
 class FeedApi extends ApiCalls {
   FeedApi(Duration timeout) : super(timeout);
 
+  Future<ApiResponse> postQuestion(
+      {String questionString, String category, int counter = 0}) async {
+    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+
+    print(sharedPreferences.getString("com.quinbay.quora-accesstoken"));
+
+    Map<String, String> headers = {
+      'Content-Type': 'application/json',
+      'Authorization':
+          sharedPreferences.getString("com.quinbay.quora-accesstoken")
+    };
+
+    String bodyJson =
+        jsonEncode({"questionString": questionString, "category": category});
+
+    if (counter >= 5) {
+      return ApiResponse(
+          success: false, error: "Failed to retrieve data upon retries.");
+    }
+
+    http.Response response;
+
+    try {
+      response = await http.post(Uri.parse(baseGatewayUrl + 'feed/addQuestion'),
+          headers: headers, body: bodyJson);
+    } catch (e) {
+      return ApiResponse(
+          success: false,
+          error: "Error Response Code: " + response.statusCode.toString());
+    }
+
+    if (response.statusCode != 200) {
+      return ApiResponse(
+          success: false,
+          error: "Error Response Code: " + response.statusCode.toString());
+    }
+
+    var decodedResponse;
+
+    try {
+      decodedResponse = jsonDecode(response.body);
+      print(decodedResponse.toString());
+    } catch (e) {
+      return ApiResponse(
+          success: false, error: "Invalid Server Response: " + e.toString());
+    }
+
+    if (decodedResponse != null) {
+      return ApiResponse(success: true, data: decodedResponse, error: "");
+    } else {
+      return ApiResponse(success: false, error: "Invalid Server Response");
+    }
+  }
+
   Future<ApiResponse> populateUserFeed({int counter = 0}) async {
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
 

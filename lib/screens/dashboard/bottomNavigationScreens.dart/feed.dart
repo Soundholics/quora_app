@@ -58,7 +58,12 @@ class _FeedState extends State<Feed> {
                     children: snapshot.data,
                   ));
             } else {
-              return Text("");
+              return Center(
+                child: CircularProgressIndicator(
+                  valueColor:
+                      AlwaysStoppedAnimation(appConfig.appColors.quoraRed),
+                ),
+              );
             }
           },
         ),
@@ -78,6 +83,7 @@ class _PostQuestionDialogState extends State<PostQuestionDialog> {
   final TextEditingController question = TextEditingController();
 
   String selectedCategory = "Bollywood";
+  _Backend backend = _Backend();
 
   @override
   Widget build(BuildContext context) {
@@ -132,7 +138,26 @@ class _PostQuestionDialogState extends State<PostQuestionDialog> {
               width: appConfig.responsive.width(180),
               height: appConfig.responsive.height(45),
               onTap: () async {
-                // api call to post the question
+                appConfig.businessLogic.showProgressIndicator();
+
+                ApiResponse apiResponse =
+                    await backend.postQuestion(question.text, selectedCategory);
+
+                if (apiResponse.success) {
+                  Navigator.pop(context);
+                  Navigator.pop(context);
+                  appConfig.businessLogic.showSnackbar(
+                      content: "Question Posted Successfully",
+                      backgroundColor: appConfig.appColors.pastelGreen,
+                      icon: appConfig.businessLogic.appIcons.success);
+                } else {
+                  Navigator.pop(context);
+                  Navigator.pop(context);
+                  appConfig.businessLogic.showSnackbar(
+                      content: "Failed to add question",
+                      backgroundColor: appConfig.appColors.pastelRed,
+                      icon: appConfig.businessLogic.appIcons.error);
+                }
               },
             )
           ],
@@ -164,5 +189,13 @@ class _Backend {
     });
 
     return questionsForFeed;
+  }
+
+  Future<ApiResponse> postQuestion(
+      String questionString, String category) async {
+    ApiResponse apiResponse = await feedApi.postQuestion(
+        questionString: questionString, category: category);
+
+    return apiResponse;
   }
 }
