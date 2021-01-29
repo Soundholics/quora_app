@@ -1,5 +1,5 @@
 class Question {
-  int questionId;
+  String questionId;
   String questionString;
   String useremail;
   bool isAnswered;
@@ -17,7 +17,7 @@ class Question {
   Question.fromJson(Map<String, dynamic> json) {
     questionId = json['questionId'];
     questionString = json['questionString'];
-    useremail = json['useremail'];
+    useremail = json['userEmail'];
     isAnswered = json['isAnswered'];
     createdOn = json['createdOn'];
     category = json['category'];
@@ -27,7 +27,7 @@ class Question {
     final Map<String, dynamic> data = new Map<String, dynamic>();
     data['questionId'] = this.questionId;
     data['questionString'] = this.questionString;
-    data['useremail'] = this.useremail;
+    data['userEmail'] = this.useremail;
     data['isAnswered'] = this.isAnswered;
     data['createdOn'] = this.createdOn;
     data['category'] = this.category;

@@ -3,12 +3,13 @@ import 'package:common_infra_ads/utilities/appConfig/appConfig.dart';
 import 'package:flutter/material.dart';
 
 class UaqWidget extends StatelessWidget {
-  final AppConfig appConfig;
+  AppConfig appConfig;
   final Question question;
 
-  UaqWidget({@required this.appConfig, @required this.question});
+  UaqWidget({@required this.question});
   @override
   Widget build(BuildContext context) {
+    appConfig = AppConfig(context);
     return InkWell(
       onTap: () {
         // show dialog to answer the question
