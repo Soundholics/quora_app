@@ -1,0 +1,51 @@
+name: common_infra_ads
+description: Ads module for week 2 project
+
+publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+version: 1.0.0+1
+
+environment:
+  sdk: ">=2.7.0 <3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.0
+  smooth_page_indicator: #Page Indicators
+  email_validator: #Email Validation
+  flushbar: #Snack bars
+  shared_preferences: ^0.5.10 #Local Storage
+  http: ^0.12.2 #for https calls
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/logo/quinbaylogo.jpg
+    - assets/logo/
+    - assets/images/
+
+  fonts:
+      - family: Montserrat
+        fonts:
+          - asset: assets/fonts/Montserrat-Black.ttf
+          - asset: assets/fonts/Montserrat-BlackItalic.ttf
+          - asset: assets/fonts/Montserrat-Bold.ttf
+          - asset: assets/fonts/Montserrat-ExtraBold.ttf
+          - asset: assets/fonts/Montserrat-ExtraLight.ttf
+          - asset: assets/fonts/Montserrat-ExtraLightItalic.ttf
+          - asset: assets/fonts/Montserrat-Italic.ttf
+          - asset: assets/fonts/Montserrat-Light.ttf
+          - asset: assets/fonts/Montserrat-LightItalic.ttf
+          - asset: assets/fonts/Montserrat-Medium.ttf
+          - asset: assets/fonts/Montserrat-MediumItalic.ttf
+          - asset: assets/fonts/Montserrat-Regular.ttf
+          - asset: assets/fonts/Montserrat-semiBold.ttf
+          - asset: assets/fonts/Montserrat-semiBoldItalic.ttf
+          - asset: assets/fonts/Montserrat-Thin.ttf
+          - asset: assets/fonts/Montserrat-ThinItalic.ttf
