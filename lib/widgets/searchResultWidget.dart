@@ -3,16 +3,17 @@ import 'package:common_infra_ads/utilities/appConfig/appConfig.dart';
 import 'package:flutter/material.dart';
 
 class SearchResultWidget extends StatelessWidget {
-  final AppConfig appConfig;
+  AppConfig appConfig;
   final SearchResult searchResult;
 
-  SearchResultWidget({this.appConfig, this.searchResult});
+  SearchResultWidget({this.searchResult});
 
   @override
   Widget build(BuildContext context) {
+    appConfig = AppConfig(context);
     return InkWell(
       onTap: () {
-        // go to profile page
+        // go to profile of that user
       },
       child: Padding(
         padding: EdgeInsets.symmetric(vertical: appConfig.responsive.height(5)),
@@ -30,12 +31,10 @@ class SearchResultWidget extends StatelessWidget {
           width: appConfig.responsive.widthBasedOnPercentage(97),
           child: ListTile(
             isThreeLine: false,
-            // leading: CircleAvatar(
-            //   backgroundImage: AssetImage("name"),
-            // ),
-            title: Text(searchResult.firstname + " " + searchResult.lastname),
-            subtitle: Text(searchResult.useremail),
-            trailing: searchResult.isPrivate
+            title: Text((searchResult.firstname ?? searchResult.businessName)),
+            subtitle:
+                Text(searchResult.useremail ?? searchResult.businessEmail),
+            trailing: searchResult.isPrivate ?? true
                 ? Icon(
                     Icons.lock,
                     color: appConfig.appColors.quoraRed,

@@ -1,3 +1,5 @@
+import 'package:common_infra_ads/backend/apiCalls.dart';
+import 'package:common_infra_ads/backend/apiResponse.dart';
 import 'package:common_infra_ads/dataModels/DTOs/searchResult.dart';
 import 'package:common_infra_ads/utilities/appConfig/appConfig.dart';
 import 'package:common_infra_ads/widgets/searchResultWidget.dart';
@@ -11,6 +13,9 @@ class Search extends StatefulWidget {
 class _SearchState extends State<Search> {
   AppConfig appConfig;
   List<SearchResultWidget> searchResultWidgets = List();
+  String searchString = "";
+
+  _Backend backend = _Backend();
 
   @override
   Widget build(BuildContext context) {
@@ -31,21 +36,17 @@ class _SearchState extends State<Search> {
   }
 
   Widget _searchBar() {
-    void _onPressed() {
-      setState(() {
-        searchResultWidgets.add(SearchResultWidget(
-          appConfig: appConfig,
-          searchResult: SearchResult(
-              photourl: "",
-              firstname: "Akshith",
-              lastname: "Chittiveli",
-              useremail: "akshithchittiveli@gmail.com",
-              isPrivate: true),
-        ));
-      });
+    void _onPressed() async {
+      // clear the search results already available on the screen
+      searchResultWidgets.removeRange(0, searchResultWidgets.length);
+
+      // clear the search string
+
+      searchResultWidgets = await backend.searchUser(searchString);
+
+      setState(() {});
     }
 
-    String searchString = "";
     return Container(
       width: appConfig.responsive.width(330),
       height: appConfig.responsive.height(44),
@@ -113,5 +114,23 @@ class _SearchState extends State<Search> {
         ],
       ),
     );
+  }
+}
+
+class _Backend {
+  SearchApi searchApi = SearchApi(Duration(seconds: 5));
+
+  List<SearchResultWidget> searchResults = List();
+
+  Future<List<SearchResultWidget>> searchUser(String username) async {
+    ApiResponse apiResponse = await searchApi.search(username: username);
+
+    apiResponse.data.forEach((searchResultItem) {
+      print(searchResultItem.toString());
+      searchResults.add(SearchResultWidget(
+          searchResult: SearchResult.fromJson(searchResultItem)));
+    });
+
+    return searchResults;
   }
 }
