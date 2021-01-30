@@ -2,15 +2,20 @@ import 'dart:convert';
 
 import 'package:common_infra_ads/backend/apiCalls.dart';
 import 'package:common_infra_ads/backend/apiResponse.dart';
+import 'package:common_infra_ads/dataModels/DTOs/questionsForFeed.dart';
 import 'package:common_infra_ads/dataModels/DTOs/userEngagement.dart';
 import 'package:common_infra_ads/dataModels/user.dart';
+import 'package:common_infra_ads/screens/userProfile/userProfile.dart';
 import 'package:common_infra_ads/utilities/appConfig/appConfig.dart';
 import 'package:common_infra_ads/utilities/enums.dart';
+import 'package:common_infra_ads/utilities/navigation/pageTransitionAnimation.dart';
 import 'package:common_infra_ads/widgets/engagementDetailsHolder.dart';
 import 'package:common_infra_ads/widgets/profileOptions.dart';
+import 'package:common_infra_ads/widgets/questionOnFeed.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
 
 class ProfileScreen extends StatefulWidget {
   final SharedPreferences sharedPreferences;
@@ -103,8 +108,65 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ProfileOption(
             title: "Question History",
             appConfig: appConfig,
-            onTap: () {
-              // api call to get the questions and push to new screen
+            onTap: () async {
+              SharedPreferences sharedPreferences =
+                  await SharedPreferences.getInstance();
+
+              print(
+                  sharedPreferences.getString("com.quinbay.quora-accesstoken"));
+
+              Map<String, String> headers = {
+                'Content-Type': 'application/json',
+                'Authorization':
+                    sharedPreferences.getString("com.quinbay.quora-accesstoken")
+              };
+              http.Response userDetails = await http.get(
+                  Uri.parse(appConfig.baseGatewayUrl +
+                      'quoraUsers/getUserDetailsByUserEmail/${this.user.useremail}'),
+                  headers: headers);
+
+              User user = User.fromJson(jsonDecode(userDetails.body));
+
+              print(userDetails.body);
+
+              // check if user is private
+
+              if (user.isPrivate) {
+                // if true send directly to profile
+                Navigator.push(
+                    context,
+                    EnterExitRoute(
+                        enterPage: UserProfileScreen(
+                      user: user,
+                    )));
+              } else {
+                // if false
+                // make a call to get user questions
+                http.Response userQuestions = await http.get(
+                    Uri.parse(appConfig.baseGatewayUrl +
+                        'feed/otherProfilePage/${this.user.useremail}'),
+                    headers: headers);
+
+                print(userQuestions.body);
+
+                List<QuestionOnFeed> questionsForProfile = List();
+
+                jsonDecode(userQuestions.body).forEach((question) {
+                  questionsForProfile.add(QuestionOnFeed(
+                      questionForFeed: QuestionForFeed.fromJson(question)
+                        ..useremail = "You"));
+                });
+
+                // feed/otherProfilePage/useremail //get //QuestionFeedDto
+                // send the user to profile
+                Navigator.push(
+                    context,
+                    EnterExitRoute(
+                        enterPage: UserProfileScreen(
+                      user: user,
+                      questionsForFeed: questionsForProfile,
+                    )));
+              }
             },
           ),
           seperatorHorizontal,
@@ -113,6 +175,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
             appConfig: appConfig,
             onTap: () {
               // api call to get the answers and push to new screen
+              appConfig.businessLogic.showSnackbar(
+                  content: "Feature would be available soon!\n~Quora Team",
+                  backgroundColor: appConfig.appColors.black);
             },
           ),
           seperatorHorizontal,

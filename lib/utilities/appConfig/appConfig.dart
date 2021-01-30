@@ -22,4 +22,6 @@ class AppConfig {
 
   // Update the App Version code upon deployment
   final String appVersion = "v 0.0.1 -a";
+  final String baseAuthUrl = "http://10.177.2.29:9005/";
+  final String baseGatewayUrl = "http://10.177.2.29:8760/";
 }

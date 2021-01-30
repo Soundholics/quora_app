@@ -33,7 +33,7 @@ class QuestionOnFeed extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                questionForFeed.questionString,
+                "${questionForFeed.questionString}",
                 style: appConfig.appTextTheme.textStyle5.copyWith(
                     fontSize: appConfig.responsive.height(20),
                     color: appConfig.appColors.quoraRed),
@@ -48,7 +48,7 @@ class QuestionOnFeed extends StatelessWidget {
               ),
               sizedBox(5),
               Text(
-                questionForFeed.topAnswer,
+                questionForFeed.topAnswer ?? "",
                 style: appConfig.appTextTheme.textStyle1,
               ),
               sizedBox(5),
@@ -56,7 +56,7 @@ class QuestionOnFeed extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    "Upvotes : ${questionForFeed.topAnswerUpvotes} | Downvotes : ${questionForFeed.topAnswerDownvotes}",
+                    "Upvotes : ${questionForFeed.topAnswerUpvotes ?? 0} | Downvotes : ${questionForFeed.topAnswerDownvotes ?? 0}",
                     style: appConfig.appTextTheme.textStyle39.copyWith(
                       color: appConfig.appColors.black.withOpacity(0.4),
                       fontSize: appConfig.responsive.height(11),
